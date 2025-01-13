@@ -46,15 +46,12 @@ app.delete('/delete/:id', (req, res) => {
     Task.deleteOne({ _id: req.params.id })
         .then(result => {
             if (result.deletedCount === 1) {
-                console.log('One Task is deleted');
                 res.redirect("/");
             } else {
-                console.log('No task found with the provided ID');
                 res.status(404).send('Task not found');
             }
         })
         .catch(error => {
-            console.log(`There was an error: ${error}`);
             res.status(500).send('Internal server error');
         });
 });
