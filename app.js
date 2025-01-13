@@ -2,6 +2,10 @@
 const express = require('express'); // Framework pour créer une application web
 const mongoose = require('mongoose'); // ORM pour interagir avec MongoDB
 const app = express();// Initialisation de l'application Express
+
+const methodOverride = require('method-override');
+app.use(methodOverride('_method',{methods: ['POST','GET']}));
+
 // Configuration du moteur de vue à EJS pour rendre les pages dynamiquement
 app.set("view engine","ejs")
 // allow to read user data from body
@@ -36,35 +40,14 @@ app.get('/', async (req, res) => {
   });
   
 
-
-
-// app.get('/', async (req, res) => {
-//     try {
-//         // Création d'une nouvelle tâche avec le titre fourni dans l'URL
-//         const tasks = await Task.find({});
-//         res.render("todo.ejs", { todotasks: tasks }); // Passer les tâches au rendu pour les afficher dans votre EJS
-//     } catch (error) {
-//         console.error(`Il y a eu une erreur : ${error}`);
-//         res.status(500).send('Erreur lors de la récupération des tâches.');
-//     }
-// });
-// app.get('/', (req, res) => {
-//     Task.find({}).then(tasks => {
-//         tasks.forEach(task => console.log(task));
-//         res.json(tasks); // Optionally, send the tasks back in the response
-//     }).catch(error => {
-//         console.log(`There was an error: ${error}`);
-//         res.status(500).send("Error occurred while retrieving tasks");
-//     });
-// });
-
 //delete 
-app.get('/delete/:id', (req, res) => {
+
+app.delete('/delete/:id', (req, res) => {
     Task.deleteOne({ _id: req.params.id })
         .then(result => {
             if (result.deletedCount === 1) {
                 console.log('One Task is deleted');
-                res.status(200).send('Task deleted');
+                res.redirect("/");
             } else {
                 console.log('No task found with the provided ID');
                 res.status(404).send('Task not found');
@@ -77,17 +60,29 @@ app.get('/delete/:id', (req, res) => {
 });
 
 //update
-app.get('/update/:id/:title', (req, res) => {
-    Task.updateOne({ _id: req.params.id }, { title: req.params.title })
-        .then(() => {
-            console.log('task updated');
-            res.send('Task updated');
-        })
-        .catch((error) => {
-            console.log(`There was an error: ${error}`);
-            res.status(500).send('Error updating task');
+app.get('/update/:id', async (req, res) => {
+    const id = req.params.id;
+    try {
+        const tasks = await Task.findById(id); // Utilisation de `await` pour attendre la réponse
+        res.render('todoEdit.ejs', { todotasks: [tasks], idTask: id }); // Passez la tâche unique dans un tableau pour réutiliser la logique du template
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Erreur lors de la récupération de la tâche');
+    }
+});
+
+
+app.put('/update/:id', (req, res) => {
+    const id = req.params.id;
+    Task.findByIdAndUpdate(id, { title: req.body.title })
+        .then(() => res.redirect('/'))
+        .catch(err => {
+            console.error(`Erreur lors de la mise à jour : ${err}`);
+            res.status(500).send('Erreur lors de la mise à jour de la tâche');
         });
 });
+
+
 
 
 app.listen(3000,()=>{console.log('express started!')})
