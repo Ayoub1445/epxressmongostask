@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const schema = new mongoose.Schema({
     title:{
         type:String,
-        required:true
+        required:true,
     }
 });
 // to make date visible
