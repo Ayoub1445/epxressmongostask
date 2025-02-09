@@ -14,5 +14,11 @@ app.use(express.json());
 mongoose.connect('mongodb://127.0.0.1:27017/ToDo' );
 
 
-app.listen(3000,()=>{console.log('express started!')})
+// app.listen(3000,()=>{console.log('express started!')})
+app.set("port", process.env.PORT || 3000);
+
+app.listen(app.get("port"), () => {
+    console.log(`Server running at http://localhost:${app.get("port")}`);
+});
+
 
